@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Work Time Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f7f7f7;
+    }
+    h1 {
+      text-align: center;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+      font-size: 16px;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      max-width: 400px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Work Time Calculator</h1>
+
+  <div class="container">
+    <label for="completedTime">Completed Time (HH:MM):</label>
+    <input type="text" id="completedTime" placeholder="e.g., 5:46">
+
+    <label for="punchInTime">Last Punching-in Time (HH:MM):</label>
+    <input type="text" id="punchInTime" placeholder="e.g., 17:03">
+
+    <label for="targetTime">Target Time (HH:MM):</label>
+    <input type="text" id="targetTime" value="8:30">
+
+    <button onclick="calculateExitTime()">Calculate Exit Time</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    function calculateExitTime() {
+      const completed = document.getElementById('completedTime').value.trim();
+      const punchIn = document.getElementById('punchInTime').value.trim();
+      const target = document.getElementById('targetTime').value.trim();
+
+      if (!completed || !punchIn || !target) {
+        document.getElementById('result').innerText = 'Please fill all fields.';
+        return;
+      }
+
+      const [completedHours, completedMinutes] = completed.split(':').map(Number);
+      const [punchInHours, punchInMinutes] = punchIn.split(':').map(Number);
+      const [targetHours, targetMinutes] = target.split(':').map(Number);
+
+      // Convert to minutes
+      const completedTotalMinutes = (completedHours * 60) + completedMinutes;
+      const targetTotalMinutes = (targetHours * 60) + targetMinutes;
+      const punchInTotalMinutes = (punchInHours * 60) + punchInMinutes;
+
+      const remainingMinutes = targetTotalMinutes - completedTotalMinutes;
+      const exitTimeMinutes = punchInTotalMinutes + remainingMinutes;
+
+      // Calculate exit time
+      const exitHours = Math.floor(exitTimeMinutes / 60) % 24;
+      const exitMinutes = exitTimeMinutes % 60;
+
+      // Format properly
+      const formattedExitTime = 
+        `${exitHours.toString().padStart(2, '0')}:${exitMinutes.toString().padStart(2, '0')}`;
+
+      document.getElementById('result').innerText = `You need to work until: ${formattedExitTime}`;
+    }
+  </script>
+
+</body>
+</html>
