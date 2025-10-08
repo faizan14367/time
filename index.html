@@ -198,7 +198,7 @@
     <input type="text" id="punchInTime" placeholder="e.g., 17:03">
 
     <label for="targetTime">Target Time (HH:MM):</label>
-    <input type="text" id="targetTime" value="8:30" placeholder="e.g., 8:30"> <button onclick="calculateExitTime()">Calculate Exit Time</button>
+    <input type="text" id="targetTime" value="20:30" placeholder="e.g., 20:30"> <button onclick="calculateExitTime()">Calculate Exit Time</button>
 
     <div id="result">
         <span id="resultText"></span>
@@ -278,7 +278,7 @@
         `${exitHours.toString().padStart(2, '0')}:${exitMinutes.toString().padStart(2, '0')}`;
 
       // Condition: Use 19:00 (7 PM) as the threshold for 'late' exit (just an example)
-      const lateHourThreshold = 19; 
+      const lateHourThreshold = 7; 
       
       if (exitHours >= lateHourThreshold) {
         resultDiv.style.color = "#d63031";
