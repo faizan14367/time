@@ -68,10 +68,15 @@
       z-index: 1;
     }
 
+    /* Wrapper for Input and Paste Button */
+    .input-wrapper {
+        position: relative;
+        margin-bottom: 18px; /* Move margin from input to wrapper */
+    }
+
     input {
       width: 100%;
       padding: 12px 14px;
-      margin-bottom: 18px;
       font-size: 16px;
       border-radius: 10px;
       border: 1.5px solid #ccc;
@@ -80,13 +85,93 @@
       position: relative;
       z-index: 1;
       transition: all 0.25s ease;
+      
+      /* Default text style */
+      text-align: left;
+      color: #2d3436;
+      font-weight: 400;
     }
 
+    /* Default focus style for inputs without the paste feature */
     input:focus {
       border-color: #6a11cb;
       box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
     }
+    
+    /* Paste Button Styling */
+    .paste-overlay-button {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #2575fc, #6a11cb);
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        z-index: 2; 
+        pointer-events: auto;
+        opacity: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .paste-overlay-button:hover {
+        opacity: 0.9;
+    }
+    
+    /* --- STYLES FOR CLEAN PASTED/TYPED LOOK --- */
+    
+    /* 1. Hide the paste button when user is typing/pasting */
+    .input-wrapper.typing .paste-overlay-button {
+        opacity: 0;
+        pointer-events: none; 
+        transform: scale(0.95);
+    }
+    
+    /* 2. Style the input itself to remove borders/shadows and center text */
+    .input-wrapper.typing input {
+        border: none !important; 
+        box-shadow: none !important; 
+        background: transparent !important; 
+        
+        /* Center and style the colorful text */
+        text-align: center; 
+        font-size: 20px; 
+        font-weight: 700; 
+        
+        /* Apply the gradient color to the text - FIX APPLIED HERE */
+        background: linear-gradient(45deg, #6a11cb, #2575fc) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        transition: all 0.3s ease;
+        padding: 12px 0; /* Adjust vertical padding for center look */
+    }
+    
+    /* 3. Style when the user focuses the clean-styled input (for editing) */
+    .input-wrapper.typing input:focus {
+        /* Revert text color on focus for better editing visibility, using !important */
+        -webkit-text-fill-color: #2d3436 !important;
+        background: #fff !important;
+        text-align: left !important; /* Revert text alignment for editing */
 
+        /* Keep the visual cues for editing */
+        border: 1px solid #ccc !important; 
+        box-shadow: 0 0 0 2px rgba(106, 17, 203, 0.1) !important;
+        padding: 12px 14px !important; 
+    }
+    
+    /* Style for the Target Time input (which doesn't have the paste button) */
+    #targetTime {
+        margin-bottom: 18px; 
+    }
+
+    /* --- Calculation Button & Result Styles (from previous step) --- */
     button {
       width: 100%;
       background: linear-gradient(135deg, #6a11cb, #2575fc);
@@ -106,27 +191,25 @@
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(37, 117, 252, 0.3);
     }
-    
-    /* --- NEW/MODIFIED STYLES FOR RESULT --- */
-    
+
     /* Base styles for the result container */
     #result {
       margin-top: 24px;
-      text-align: left; /* Aligns content to the left */
+      text-align: left; 
       font-weight: 600;
       font-size: 18px;
       position: relative;
       z-index: 1;
       padding: 15px 0;
-      border-top: 1px solid #eee; /* Subtle separator */
-      opacity: 0; /* Hidden by default for animation */
+      border-top: 1px solid #eee; 
+      opacity: 0; 
       transition: opacity 0.5s ease-in-out;
     }
 
     /* Style for the actual time display */
     #exitTimeDisplay {
-      display: block; /* Make it take its own line */
-      font-size: 48px; /* Big size */
+      display: block; 
+      font-size: 48px; 
       font-weight: 700;
       margin-top: 8px;
       letter-spacing: 2px;
@@ -134,8 +217,8 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       line-height: 1;
-      padding-left: 5px; /* decoration: a little padding */
-      border-left: 5px solid; /* decoration: a prominent left border */
+      padding-left: 5px; 
+      border-left: 5px solid; 
       border-image: linear-gradient(to bottom, #6a11cb, #2575fc) 1;
       transition: all 0.3s ease;
     }
@@ -159,7 +242,7 @@
         background: linear-gradient(90deg, #00b894, #00d3a5);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        animation: pulse-success 1.5s ease-in-out 3; /* Pulse 3 times */
+        animation: pulse-success 1.5s ease-in-out 3; 
     }
 
     /* Late exit time styling */
@@ -168,14 +251,14 @@
         background: linear-gradient(90deg, #d63031, #ff6b6b);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        animation: shake-fail 0.5s ease-in-out; /* Shake once */
+        animation: shake-fail 0.5s ease-in-out; 
     }
     
     /* Make the result visible */
     .visible {
         opacity: 1 !important;
     }
-    
+
     footer {
       position: fixed;
       bottom: 15px;
@@ -192,13 +275,25 @@
     <h1>⏰ Chaloooo......</h1>
 
     <label for="completedTime">Completed Time (HH:MM):</label>
-    <input type="text" id="completedTime" placeholder="e.g., 5:46">
+    <div class="input-wrapper" id="completedTimeWrapper">
+        <input type="text" id="completedTime" placeholder="e.g., 5:46">
+        <button class="paste-overlay-button" onclick="handlePasteClick('completedTime', 'completedTimeWrapper')">
+            <span style="margin-right: 8px;">📋</span> Click to Paste Completed Time
+        </button>
+    </div>
 
     <label for="punchInTime">Last Punching-in Time (HH:MM):</label>
-    <input type="text" id="punchInTime" placeholder="e.g., 17:03">
+    <div class="input-wrapper" id="punchInTimeWrapper">
+        <input type="text" id="punchInTime" placeholder="e.g., 17:03">
+        <button class="paste-overlay-button" onclick="handlePasteClick('punchInTime', 'punchInTimeWrapper')">
+            <span style="margin-right: 8px;">📋</span> Click to Paste Punch-in Time
+        </button>
+    </div>
 
     <label for="targetTime">Target Time (HH:MM):</label>
-    <input type="text" id="targetTime" value="20:30" placeholder="e.g., 20:30"> <button onclick="calculateExitTime()">Calculate Exit Time</button>
+    <input type="text" id="targetTime" value="20:30" placeholder="e.g., 8:30">
+
+    <button onclick="calculateExitTime()">Calculate Exit Time</button>
 
     <div id="result">
         <span id="resultText"></span>
@@ -207,14 +302,92 @@
   </div>
 
   <script>
+    
+    const resultDiv = document.getElementById('result');
+    const resultTextSpan = document.getElementById('resultText');
+    const exitTimeDisplaySpan = document.getElementById('exitTimeDisplay');
+
+    // 1. Function to handle the Paste button click
+    async function handlePasteClick(inputId, wrapperId) {
+      const inputElement = document.getElementById(inputId);
+      const wrapperElement = document.getElementById(wrapperId);
+
+      // Immediately set the typing class to hide the button and style the input
+      wrapperElement.classList.add('typing'); 
+
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        try {
+          const text = await navigator.clipboard.readText();
+          
+          if (text) {
+            inputElement.value = text.trim();
+          } 
+          
+          // Crucially, focus the input to enable immediate editing/submission
+          inputElement.focus();
+          
+        } catch (err) {
+          console.error('Failed to read clipboard contents: ', err);
+          alert('Failed to access clipboard. Please paste manually (Ctrl+V or Cmd+V).');
+          inputElement.focus();
+        }
+      } else {
+        alert('Your browser does not support automatic clipboard access. Please focus the box and paste manually (Ctrl+V or Cmd+V).');
+        inputElement.focus();
+      }
+    }
+    
+    // 2. Function to manage input visual state
+    function setupInputInteractions() {
+        const inputs = [
+            { id: 'completedTime', wrapperId: 'completedTimeWrapper' },
+            { id: 'punchInTime', wrapperId: 'punchInTimeWrapper' }
+        ];
+
+        inputs.forEach(({ id, wrapperId }) => {
+            const inputElement = document.getElementById(id);
+            const wrapperElement = document.getElementById(wrapperId);
+
+            // Logic to apply/remove the 'typing' class
+            const toggleTypingClass = () => {
+                if (inputElement.value.length > 0) {
+                    wrapperElement.classList.add('typing');
+                } else {
+                    wrapperElement.classList.remove('typing');
+                }
+            };
+            
+            // On typing or content change
+            inputElement.addEventListener('input', toggleTypingClass);
+            
+            // On focusing (user intends to type/edit)
+            inputElement.addEventListener('focus', () => {
+                // Ensure the clean/typing style is active to allow input
+                wrapperElement.classList.add('typing');
+            });
+            
+            // On blur (losing focus)
+            inputElement.addEventListener('blur', () => {
+                // A small delay to ensure it doesn't immediately reappear if user clicks Calculate
+                setTimeout(() => {
+                    if (inputElement.value.length === 0 && document.activeElement !== inputElement) {
+                        wrapperElement.classList.remove('typing');
+                    }
+                }, 100); 
+            });
+            
+            // Initialization check
+            toggleTypingClass();
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', setupInputInteractions);
+
+    // 3. Your core calculation function
     function calculateExitTime() {
       const completed = document.getElementById('completedTime').value.trim();
       const punchIn = document.getElementById('punchInTime').value.trim();
       const target = document.getElementById('targetTime').value.trim();
-
-      const resultDiv = document.getElementById('result');
-      const resultTextSpan = document.getElementById('resultText');
-      const exitTimeDisplaySpan = document.getElementById('exitTimeDisplay');
 
       // Reset classes and content
       resultDiv.classList.remove('visible', 'success', 'late');
@@ -241,7 +414,6 @@
       const [punchInHours, punchInMinutes] = parseTime(punchIn);
       const [targetHours, targetMinutes] = parseTime(target);
       
-      // Basic validation for numbers
       if (isNaN(completedHours) || isNaN(punchInHours) || isNaN(targetHours)) {
           resultDiv.style.color = "#d63031";
           resultTextSpan.innerText = "⚠️ Invalid time format. Use HH:MM.";
@@ -249,14 +421,10 @@
           return;
       }
 
-      // Convert target time (total work duration) into minutes
       const targetTotalMinutes = (targetHours * 60) + targetMinutes;
-      // Convert completed time (already worked duration) into minutes
       const completedTotalMinutes = (completedHours * 60) + completedMinutes;
-      // Convert punch-in time (the last one) into minutes from midnight
       const punchInTotalMinutes = (punchInHours * 60) + punchInMinutes;
 
-      // Calculate remaining work time
       const remainingMinutes = targetTotalMinutes - completedTotalMinutes;
       
       if (remainingMinutes < 0) {
@@ -267,18 +435,16 @@
           return;
       }
       
-      // Calculate final exit time by adding remaining time to last punch-in time
       const exitTimeMinutes = punchInTotalMinutes + remainingMinutes;
 
-      // Convert total minutes for exit time back into HH:MM
-      const exitHours = Math.floor(exitTimeMinutes / 60) % 24;
+      // Handle time wrap
+      const exitHours = Math.floor(exitTimeMinutes / 60) % 24; 
       const exitMinutes = exitTimeMinutes % 60;
 
       const formattedExitTime = 
         `${exitHours.toString().padStart(2, '0')}:${exitMinutes.toString().padStart(2, '0')}`;
 
-      // Condition: Use 19:00 (7 PM) as the threshold for 'late' exit (just an example)
-      const lateHourThreshold = 7; 
+      const lateHourThreshold = 7; // 7 PM
       
       if (exitHours >= lateHourThreshold) {
         resultDiv.style.color = "#d63031";
@@ -291,7 +457,7 @@
       }
       
       exitTimeDisplaySpan.innerText = formattedExitTime;
-      resultDiv.classList.add('visible'); // Show the result with animation
+      resultDiv.classList.add('visible');
     }
   </script>
 
