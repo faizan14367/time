@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Chaloooo......</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
@@ -105,16 +106,76 @@
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(37, 117, 252, 0.3);
     }
-
+    
+    /* --- NEW/MODIFIED STYLES FOR RESULT --- */
+    
+    /* Base styles for the result container */
     #result {
       margin-top: 24px;
-      text-align: center;
+      text-align: left; /* Aligns content to the left */
       font-weight: 600;
       font-size: 18px;
       position: relative;
       z-index: 1;
+      padding: 15px 0;
+      border-top: 1px solid #eee; /* Subtle separator */
+      opacity: 0; /* Hidden by default for animation */
+      transition: opacity 0.5s ease-in-out;
     }
 
+    /* Style for the actual time display */
+    #exitTimeDisplay {
+      display: block; /* Make it take its own line */
+      font-size: 48px; /* Big size */
+      font-weight: 700;
+      margin-top: 8px;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #6a11cb, #2575fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      padding-left: 5px; /* decoration: a little padding */
+      border-left: 5px solid; /* decoration: a prominent left border */
+      border-image: linear-gradient(to bottom, #6a11cb, #2575fc) 1;
+      transition: all 0.3s ease;
+    }
+    
+    /* Animation for the time display */
+    @keyframes pulse-success {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes shake-fail {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+    
+    /* Successful exit time styling */
+    .success #exitTimeDisplay {
+        border-image: linear-gradient(to bottom, #00b894, #00d3a5) 1;
+        background: linear-gradient(90deg, #00b894, #00d3a5);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: pulse-success 1.5s ease-in-out 3; /* Pulse 3 times */
+    }
+
+    /* Late exit time styling */
+    .late #exitTimeDisplay {
+        border-image: linear-gradient(to bottom, #d63031, #ff6b6b) 1;
+        background: linear-gradient(90deg, #d63031, #ff6b6b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shake-fail 0.5s ease-in-out; /* Shake once */
+    }
+    
+    /* Make the result visible */
+    .visible {
+        opacity: 1 !important;
+    }
+    
     footer {
       position: fixed;
       bottom: 15px;
@@ -137,11 +198,12 @@
     <input type="text" id="punchInTime" placeholder="e.g., 17:03">
 
     <label for="targetTime">Target Time (HH:MM):</label>
-    <input type="text" id="targetTime" value="20:30">
+    <input type="text" id="targetTime" value="8:30" placeholder="e.g., 8:30"> <button onclick="calculateExitTime()">Calculate Exit Time</button>
 
-    <button onclick="calculateExitTime()">Calculate Exit Time</button>
-
-    <div id="result"></div>
+    <div id="result">
+        <span id="resultText"></span>
+        <span id="exitTimeDisplay"></span>
+    </div>
   </div>
 
   <script>
@@ -151,38 +213,85 @@
       const target = document.getElementById('targetTime').value.trim();
 
       const resultDiv = document.getElementById('result');
+      const resultTextSpan = document.getElementById('resultText');
+      const exitTimeDisplaySpan = document.getElementById('exitTimeDisplay');
+
+      // Reset classes and content
+      resultDiv.classList.remove('visible', 'success', 'late');
+      resultTextSpan.innerText = "";
+      exitTimeDisplaySpan.innerText = "";
 
       if (!completed || !punchIn || !target) {
         resultDiv.style.color = "#d63031";
-        resultDiv.innerText = "⚠️ Please fill all fields.";
+        resultTextSpan.innerText = "⚠️ Please fill all fields.";
+        resultDiv.classList.add('visible');
         return;
       }
+      
+      // Helper function to parse time
+      function parseTime(timeStr) {
+        const parts = timeStr.split(':');
+        if (parts.length === 2) {
+          return parts.map(Number);
+        }
+        return [NaN, NaN];
+      }
 
-      const [completedHours, completedMinutes] = completed.split(':').map(Number);
-      const [punchInHours, punchInMinutes] = punchIn.split(':').map(Number);
-      const [targetHours, targetMinutes] = target.split(':').map(Number);
+      const [completedHours, completedMinutes] = parseTime(completed);
+      const [punchInHours, punchInMinutes] = parseTime(punchIn);
+      const [targetHours, targetMinutes] = parseTime(target);
+      
+      // Basic validation for numbers
+      if (isNaN(completedHours) || isNaN(punchInHours) || isNaN(targetHours)) {
+          resultDiv.style.color = "#d63031";
+          resultTextSpan.innerText = "⚠️ Invalid time format. Use HH:MM.";
+          resultDiv.classList.add('visible');
+          return;
+      }
 
-      const completedTotalMinutes = (completedHours * 60) + completedMinutes;
+      // Convert target time (total work duration) into minutes
       const targetTotalMinutes = (targetHours * 60) + targetMinutes;
+      // Convert completed time (already worked duration) into minutes
+      const completedTotalMinutes = (completedHours * 60) + completedMinutes;
+      // Convert punch-in time (the last one) into minutes from midnight
       const punchInTotalMinutes = (punchInHours * 60) + punchInMinutes;
 
+      // Calculate remaining work time
       const remainingMinutes = targetTotalMinutes - completedTotalMinutes;
+      
+      if (remainingMinutes < 0) {
+          resultDiv.style.color = "#00b894";
+          resultTextSpan.innerText = "🎉 You've already completed your target time!";
+          exitTimeDisplaySpan.innerText = "DONE!";
+          resultDiv.classList.add('visible', 'success');
+          return;
+      }
+      
+      // Calculate final exit time by adding remaining time to last punch-in time
       const exitTimeMinutes = punchInTotalMinutes + remainingMinutes;
 
+      // Convert total minutes for exit time back into HH:MM
       const exitHours = Math.floor(exitTimeMinutes / 60) % 24;
       const exitMinutes = exitTimeMinutes % 60;
 
       const formattedExitTime = 
         `${exitHours.toString().padStart(2, '0')}:${exitMinutes.toString().padStart(2, '0')}`;
 
-      // Condition: if exit time > 19:00 (7 PM)
-      if (exitHours > 7 || (exitHours === 7 && exitMinutes > 0)) {
+      // Condition: Use 19:00 (7 PM) as the threshold for 'late' exit (just an example)
+      const lateHourThreshold = 19; 
+      
+      if (exitHours >= lateHourThreshold) {
         resultDiv.style.color = "#d63031";
-        resultDiv.innerText = `😵‍💫 You need to work until: ${formattedExitTime}`;
+        resultTextSpan.innerText = `😵‍💫 You need to work until:`;
+        resultDiv.classList.add('late');
       } else {
         resultDiv.style.color = "#00b894";
-        resultDiv.innerText = `✅ You need to work until: ${formattedExitTime}`;
+        resultTextSpan.innerText = `✅ You need to work until:`;
+        resultDiv.classList.add('success');
       }
+      
+      exitTimeDisplaySpan.innerText = formattedExitTime;
+      resultDiv.classList.add('visible'); // Show the result with animation
     }
   </script>
 
